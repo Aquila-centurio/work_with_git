@@ -41,5 +41,44 @@ int main()
     unsigned char* buff = new unsigned char[length];
     file.read((char*)buff, length);
     file.close();
-
+    int bytes=0;
+    int k=0;
+    while (bytes<=length)
+    {
+        Archive OurRar={};
+        OurRar.header_crc[0]=buff[bytes];
+        OurRar.header_crc[1]=buff[bytes+1];
+        OurRar.header_type=buff[bytes+2];
+        OurRar.header_flags[0]=buff[bytes+3];
+        OurRar.header_flags[1]=buff[bytes+4];
+        OurRar.header_size[0]=buff[bytes+5];
+        OurRar.header_size[1]=buff[bytes+6];
+        int razmer=(int)OurRar.header_size[0]+(int)OurRar.header_size[1];
+        if (OurRar.header_type==0x74)
+        {
+            FILE_HEAD name={};
+            int name_len=(int)buff[bytes+26]+(int)buff[bytes+27];
+            name.PackSize[0]=buff[bytes+7];
+            name.PackSize[1]=buff[bytes+8];
+            name.PackSize[2]=buff[bytes+9];
+            name.PackSize[3]=buff[bytes+10];
+            int size_of_packaged_data=(int)(name.PackSize[0])+(int)(name.PackSize[1])+(int)(name.PackSize[2])+(int)(name.PackSize[3]);
+            for (int i=1; i<=name_len; i++)
+            {
+                cout << buff[i+bytes+31];
+            }
+            cout << "\n";
+            bytes=bytes+razmer+size_of_packaged_data;
+            k+=1;
+            //break;
+        }
+        else
+        {
+            bytes=bytes+razmer;
+        }
+        if (k==3)
+        {
+            break;
+        }
+    }
 }
