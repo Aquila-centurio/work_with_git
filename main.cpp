@@ -22,6 +22,15 @@ struct RAR_FILE
     unsigned char header_size[2];
 };
 
+void printer(int lenght_of_name,ifstream &file){
+    for (int i=0; i<lenght_of_name; i++)
+    {
+        char a;
+        file.read(&a,1);
+        cout << a;
+    };
+    cout << endl;
+}
 
 
 int main(){
@@ -29,6 +38,7 @@ int main(){
     read_header(filePath);
     return 0;
 }
+
 
 void read_header(char *filePath){
 
@@ -61,14 +71,7 @@ void read_header(char *filePath){
                 int compress_size=int(((*Head_type).size[0])+((*Head_type).size[1])+((*Head_type).size[2])+((*Head_type).size[3]));
                 int lenght_of_name = int((*Head_type).name[0]+(*Head_type).name[1]);
                 current_loc=current_loc+len+compress_size;
-
-
-                for (int i=0; i<lenght_of_name; i++)
-                {
-                    file.read(&symb,1);
-                    cout << symb;
-                };
-                cout << endl;
+                printer(lenght_of_name,file);
 
             }
             else {
