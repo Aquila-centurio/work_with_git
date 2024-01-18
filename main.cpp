@@ -1,85 +1,84 @@
+
 #include <iostream>
-#include <fstream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
-struct Archive
+void read_header(char *filePath);
+
+struct TITLE
 {
-    unsigned char header_crc[2];
-    unsigned char header_type;
-    unsigned char header_flags[2];
+    char size[4];
+    char unusable[15];
+    char name[2];
+    char unsable2[4];
+};
+
+struct RAR_FILE
+{
+    char un_use[2];
+    char type;
+    char un_use2[2];
     unsigned char header_size[2];
 };
 
 
-struct FILE_HEAD
-{
-    char PackSize[4];
-    char UnpSize[4];
-    char HostOs;
-    char FileCRC[4];
-    char FileTime[4];
-    char UnpVer;
-    char Method;
-    unsigned char NameSize[2];
-    char FileAttr[4];
-};
 
+int main(){
+    char filePath[] = {"/home/aquila/Учёба/CLionProjects/arc/Example.rar"};
+    read_header(filePath);
+    return 0;
+}
 
-int main()
-{
-    ifstream file("Example.rar",ios::binary);
-    if (!file)
-    {
-        cout << "Файл не открыт";
-    }
-    cout << "Файл успешно открылся" << "\n";
-    file.seekg(0, ios::end);
-    int length=file.tellg();
-    file.seekg(0, ios::beg);
-    unsigned char* buff = new unsigned char[length];
-    file.read((char*)buff, length);
-    file.close();
-    int bytes=0;
-    int k=0;
-    while (bytes<=length)
-    {
-        Archive OurRar={};
-        OurRar.header_crc[0]=buff[bytes];
-        OurRar.header_crc[1]=buff[bytes+1];
-        OurRar.header_type=buff[bytes+2];
-        OurRar.header_flags[0]=buff[bytes+3];
-        OurRar.header_flags[1]=buff[bytes+4];
-        OurRar.header_size[0]=buff[bytes+5];
-        OurRar.header_size[1]=buff[bytes+6];
-        int razmer=(int)OurRar.header_size[0]+(int)OurRar.header_size[1];
-        if (OurRar.header_type==0x74)
+void read_header(char *filePath){
+
+    RAR_FILE* Title = new RAR_FILE;
+    TITLE* Head_type = new TITLE;
+
+    ifstream file;
+    file.open(filePath, ios::binary);
+
+    char symb;
+
+    if(file.is_open()){
+
+        file.seekg(0, ios::end);
+        int length=file.tellg(), current_loc = 0, num = 0;
+        file.seekg(0, ios::beg);
+
+        for(int i = 0; i<3;i++)
         {
-            FILE_HEAD name={};
-            int name_len=(int)buff[bytes+26]+(int)buff[bytes+27];
-            name.PackSize[0]=buff[bytes+7];
-            name.PackSize[1]=buff[bytes+8];
-            name.PackSize[2]=buff[bytes+9];
-            name.PackSize[3]=buff[bytes+10];
-            int size_of_packaged_data=(int)(name.PackSize[0])+(int)(name.PackSize[1])+(int)(name.PackSize[2])+(int)(name.PackSize[3]);
-            for (int i=1; i<=name_len; i++)
+            file.seekg(current_loc, ios::beg);
+            file.read((char*)Title, 7);
+
+            int len=int((*Title).header_size[0]+(*Title).header_size[1]);
+
+            if ((*Title).type==0x74)
             {
-                cout << buff[i+bytes+31];
+                int position = current_loc + 7;
+                file.seekg(position);
+                file.read((char*)Head_type, 25);
+                int compress_size=int(((*Head_type).size[0])+((*Head_type).size[1])+((*Head_type).size[2])+((*Head_type).size[3]));
+                int lenght_of_name = int((*Head_type).name[0]+(*Head_type).name[1]);
+                current_loc=current_loc+len+compress_size;
+
+
+                for (int i=0; i<lenght_of_name; i++)
+                {
+                    file.read(&symb,1);
+                    cout << symb;
+                };
+                cout << endl;
+
             }
-            cout << "\n";
-            bytes=bytes+razmer+size_of_packaged_data;
-            k+=1;
-            //break;
-        }
-        else
-        {
-            bytes=bytes+razmer;
-        }
-        if (k==3)
-        {
-            break;
-        }
+            else {
+                current_loc = current_loc + len;
+                i--;
+            }
+
+
+        };
+        file.close();
     }
 }
-// I love radiofack !
