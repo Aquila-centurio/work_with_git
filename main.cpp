@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void read_header(char *filePath);
+
 
 struct TITLE
 {
@@ -22,26 +22,12 @@ struct RAR_FILE
     unsigned char header_size[2];
 };
 
-void printer(int lenght_of_name,ifstream &file){
-    for (int i=0; i<lenght_of_name; i++)
-    {
-        char a;
-        file.read(&a,1);
-        cout << a;
-    };
-    cout << endl;
-}
+void read_header(ifstream &file, RAR_FILE* Title,TITLE* Head_type, int current_loc);
+void printer(int lenght_of_name,ifstream &file);
 
 
 int main(){
     char filePath[] = {"/home/aquila/Учёба/CLionProjects/arc/Example.rar"};
-    read_header(filePath);
-    return 0;
-}
-
-
-void read_header(char *filePath){
-
     RAR_FILE* Title = new RAR_FILE;
     TITLE* Head_type = new TITLE;
 
@@ -50,11 +36,24 @@ void read_header(char *filePath){
 
     char symb;
 
-    if(file.is_open()){
+    if(file.is_open()) {
 
         file.seekg(0, ios::end);
-        int length=file.tellg(), current_loc = 0, num = 0;
+        int length = file.tellg(), current_loc = 0, num = 0;
         file.seekg(0, ios::beg);
+        read_header(file, Title, Head_type, current_loc);
+        file.close();
+    }
+
+
+    return 0;
+}
+
+
+void read_header(ifstream &file, RAR_FILE* Title,TITLE* Head_type, int current_loc )
+{
+
+
 
         for(int i = 0; i<3;i++)
         {
@@ -81,6 +80,14 @@ void read_header(char *filePath){
 
 
         };
-        file.close();
-    }
+}
+
+void printer(int lenght_of_name,ifstream &file){
+    for (int i=0; i<lenght_of_name; i++)
+    {
+        char a;
+        file.read(&a,1);
+        cout << a;
+    };
+    cout << endl;
 }
